@@ -46,15 +46,15 @@ class ExoPlayerRecyclerView : RecyclerView {
     private var rowParent: View? = null
 
     constructor(context: Context) : super(context) {
-        initialize(context)
+//        initialize(context)
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        initialize(context)
+//        initialize(context)
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        initialize(context)
+//        initialize(context)
     }
 
     private fun initialize(context: Context) {

@@ -1,18 +1,108 @@
 package com.example.videostreamingexoplayerexe
 
+import android.content.Context
+import android.net.Uri
 import android.support.annotation.IntDef
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.MotionEvent.ACTION_DOWN
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
+import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DefaultAllocator
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Log
 import kotlinx.android.synthetic.main.item_empty_layout.view.*
 import kotlinx.android.synthetic.main.item_layout.view.*
 
-class VideoRecyclerViewAdapter(val mInfoList: List<VideoInfo>) : RecyclerView.Adapter<BaseViewHolder>() {
+class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoInfo>) :
+    RecyclerView.Adapter<BaseViewHolder>() {
 
+    // surface view for playing video
+    private var videoSurfaceView: PlayerView? = null
+
+    private var player: SimpleExoPlayer? = null
+    private var lastPlayingCover: ImageView? = null
+    private val appContext: Context = context.applicationContext
+    private var addedVideo: Boolean = false
+    private var mProgressBar: ProgressBar? = null
+    private var playingItemIndex: Int = -1
+
+    init {
+        initializePlayer()
+    }
+
+    private fun initializePlayer() {
+        // 1. create SurfaceView
+        videoSurfaceView = PlayerView(appContext)
+        videoSurfaceView!!.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+
+        // 2. create SimpleExoPlayer
+        val trackSelectionFactory = AdaptiveTrackSelection.Factory()
+        val trackSelector = DefaultTrackSelector(trackSelectionFactory)
+        val loadControl = DefaultLoadControl.Builder()
+            .setAllocator(DefaultAllocator(true, 16))
+            .setBufferDurationsMs(
+                ExoPlayerActivity.MIN_BUFFER_DURATION,
+                ExoPlayerActivity.MAX_BUFFER_DURATION,
+                ExoPlayerActivity.MIN_PLAYBACK_START_BUFFER,
+                ExoPlayerActivity.MIN_PLAYBACK_RESUME_BUFFER
+            )
+            .setTargetBufferBytes(-1)
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .createDefaultLoadControl()
+
+        player = ExoPlayerFactory.newSimpleInstance(
+            appContext,
+            DefaultRenderersFactory(appContext),
+            trackSelector,
+            loadControl
+        )
+        // 3. bind SurfaceView to ExoPlayer
+        videoSurfaceView?.player = player
+
+        player!!.addListener(object : Player.EventListener {
+            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                super.onPlayerStateChanged(playWhenReady, playbackState)
+                when (playbackState) {
+                    Player.STATE_BUFFERING -> {
+                        videoSurfaceView!!.alpha = 0.5f
+                        Log.d(TAG, "onPlayerStateChanged(): Buffering")
+                        mProgressBar?.visibility = View.VISIBLE
+
+                    }
+
+                    Player.STATE_READY -> {
+                        Log.d(TAG, "onPlayerStateChanged(): Ready")
+                        mProgressBar?.visibility = View.GONE
+                        videoSurfaceView?.visibility = View.VISIBLE
+                        videoSurfaceView?.alpha = 1.0f
+                        lastPlayingCover?.visibility = View.GONE
+                    }
+
+                    Player.STATE_ENDED -> {
+                        Log.d(TAG, "onPlayerStateChanged(): Ended")
+                        player?.seekTo(0)
+                    }
+                }
+            }
+        })
+    }
+
+    fun onRelease(){
+        player?.release()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         when (viewType) {
@@ -45,6 +135,9 @@ class VideoRecyclerViewAdapter(val mInfoList: List<VideoInfo>) : RecyclerView.Ad
         holder.onBind(position)
     }
 
+
+
+
     inner class ViewHolder(itemView: View) : BaseViewHolder(itemView) {
 
         val textViewTitle = itemView.textViewTitle
@@ -67,6 +160,68 @@ class VideoRecyclerViewAdapter(val mInfoList: List<VideoInfo>) : RecyclerView.Ad
             userHandle.text = videoInfo.mUserHandle
             Glide.with(itemView.context).load(videoInfo.mCoverUrl).apply(RequestOptions().optionalCenterCrop())
                 .into(cover)
+
+
+            itemView.setOnTouchListener { view, event ->
+                if (event.action == ACTION_DOWN) {
+                    removePreviousPlayView(videoSurfaceView!!)
+                    playOnView(position)
+                    return@setOnTouchListener true
+                }
+
+                false
+            }
+
+            itemView.setOnClickListener {
+                removePreviousPlayView(videoSurfaceView!!)  // preventing from leakage
+            }
+        }
+
+        private fun playOnView(position: Int) {
+
+
+            // add SurfaceView
+            lastPlayingCover?.visibility = View.VISIBLE
+            cover.visibility = View.GONE
+            lastPlayingCover = cover
+            mProgressBar = progressBar
+            videoLayout.addView(videoSurfaceView)
+            addedVideo = true
+            videoSurfaceView?.requestFocus()
+
+            // create MediaSource
+            val bandwidthMeter = DefaultBandwidthMeter()
+            val dataSourceFactory = DefaultDataSourceFactory(
+                appContext,
+                com.google.android.exoplayer2.util.Util.getUserAgent(appContext, context.packageName),
+                bandwidthMeter
+            )
+            val uriString = mInfoList[position].mUrl
+            if (uriString.isNotEmpty()) {
+                val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(Uri.parse(uriString))
+
+                player?.let {
+                    it.prepare(mediaSource)
+                    it.playWhenReady = true
+
+                }
+            }
+
+            playingItemIndex = position
+        }
+
+        private fun removePreviousPlayView(videoView: PlayerView) {
+
+            val parent = videoView.parent as ViewGroup? ?: return
+
+            val index = parent.indexOfChild(videoView)
+            Log.d(TAG, "index = $index, playingViewIndex = $playingItemIndex" )
+            if (index >= 0) {
+                parent.removeViewAt(index)
+                addedVideo = false
+            }
+
         }
     }
 
@@ -86,7 +241,11 @@ class VideoRecyclerViewAdapter(val mInfoList: List<VideoInfo>) : RecyclerView.Ad
         }
     }
 
+
     companion object {
+
+        private const val TAG = "VideoRecyclerViewAdapter"
+
         @IntDef(VIEW_TYPE_EMPTY, VIEW_TYPE_NORMAL)
         @Retention(AnnotationRetention.SOURCE) // not store in Binary code
         annotation class ViewType

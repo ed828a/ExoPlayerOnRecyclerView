@@ -1,10 +1,10 @@
 package com.example.videostreamingexoplayerexe
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.widget.LinearLayout.VERTICAL
@@ -14,6 +14,7 @@ class RecyclerActivity : AppCompatActivity() {
 
     private var firstTime = true
     private val videoList = prepareVideoList()
+    private var mAdapter: VideoRecyclerViewAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,19 +23,20 @@ class RecyclerActivity : AppCompatActivity() {
 
         val dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider_drawable)!!
         with(recyclerViewFeed){
-            setVideoInfoList(videoList)
+
             layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false)
             addItemDecoration(DividerItemDecoration(dividerDrawable))
             itemAnimator = DefaultItemAnimator()
-            adapter = VideoRecyclerViewAdapter(videoList)
+            mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
+            adapter = mAdapter
         }
 
-        if (firstTime){
-            Handler(Looper.getMainLooper()).post {
-                recyclerViewFeed.playVideo()
-            }
-            firstTime = false
-        }
+//        if (firstTime){
+//            Handler(Looper.getMainLooper()).post {
+//                recyclerViewFeed.playVideo()
+//            }
+//            firstTime = false
+//        }
 
         recyclerViewFeed.scrollToPosition(0)
 
@@ -42,7 +44,8 @@ class RecyclerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        recyclerViewFeed?.onRelease()
+
+        mAdapter?.onRelease()
     }
 
     private fun prepareVideoList(): List<VideoInfo> {
