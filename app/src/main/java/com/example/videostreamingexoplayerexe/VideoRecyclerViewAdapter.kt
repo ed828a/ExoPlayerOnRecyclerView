@@ -93,14 +93,14 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
                     Player.STATE_ENDED -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ended")
-                        player?.seekTo(0)
+//                        player?.seekTo(0)
                     }
                 }
             }
         })
     }
 
-    fun onRelease(){
+    fun onRelease() {
         player?.release()
     }
 
@@ -136,8 +136,6 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
     }
 
 
-
-
     inner class ViewHolder(itemView: View) : BaseViewHolder(itemView) {
 
         val textViewTitle = itemView.textViewTitle
@@ -163,6 +161,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
 
             itemView.setOnTouchListener { view, event ->
+                Log.d(TAG, "event = $event")
                 if (event.action == ACTION_DOWN) {
                     removePreviousPlayView(videoSurfaceView!!)
                     playOnView(position)
@@ -177,9 +176,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
             }
         }
 
-        private fun playOnView(position: Int) {
-
-
+        internal fun playOnView(position: Int) {
             // add SurfaceView
             lastPlayingCover?.visibility = View.VISIBLE
             cover.visibility = View.GONE
@@ -216,7 +213,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
             val parent = videoView.parent as ViewGroup? ?: return
 
             val index = parent.indexOfChild(videoView)
-            Log.d(TAG, "index = $index, playingViewIndex = $playingItemIndex" )
+            Log.d(TAG, "index = $index, playingViewIndex = $playingItemIndex")
             if (index >= 0) {
                 parent.removeViewAt(index)
                 addedVideo = false
