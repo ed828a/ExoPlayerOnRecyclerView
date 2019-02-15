@@ -1,6 +1,7 @@
 package com.example.videostreamingexoplayerexe
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.support.annotation.IntDef
 import android.support.v7.widget.RecyclerView
@@ -77,16 +78,17 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
                     Player.STATE_BUFFERING -> {
                         videoSurfaceView!!.alpha = 0.5f
                         Log.d(TAG, "onPlayerStateChanged(): Buffering")
-                        mProgressBar?.visibility = View.VISIBLE
+//                        mProgressBar?.visibility = View.VISIBLE
 
                     }
 
                     Player.STATE_READY -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ready")
-                        mProgressBar?.visibility = View.GONE
+//                        mProgressBar?.visibility = View.GONE
+                        lastPlayingCover?.visibility = View.GONE  // at this moment loastPlayingCover == cover
                         videoSurfaceView?.visibility = View.VISIBLE
                         videoSurfaceView?.alpha = 1.0f
-                        lastPlayingCover?.visibility = View.GONE
+
                     }
 
                     Player.STATE_ENDED -> {
@@ -162,23 +164,29 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
                 if (event.action == ACTION_DOWN) {
                     removePreviousPlayView(videoSurfaceView!!)
                     playOnView(position)
-                    return@setOnTouchListener true
+                    return@setOnTouchListener false
                 }
 
                 false
             }
 
             itemView.setOnClickListener {
+                Log.d(TAG, "itemView is clicked.")
                 removePreviousPlayView(videoSurfaceView!!)  // preventing from leakage
+                val intent = Intent(this@VideoRecyclerViewAdapter.context, ExoPlayerActivity::class.java)
+                intent.putExtra(ExoPlayerActivity.KEY_VIDEO_URI, mInfoList[position].mUrl)
+                Log.d(TAG, "setOnClickListener(): url = ${mInfoList[position].mUrl}")
+
+                this@VideoRecyclerViewAdapter.context.startActivity(intent)
             }
         }
 
         internal fun playOnView(position: Int) {
             // add SurfaceView
             lastPlayingCover?.visibility = View.VISIBLE
-            cover.visibility = View.GONE
+//            cover.visibility = View.GONE
             lastPlayingCover = cover
-            mProgressBar = progressBar
+//            mProgressBar = progressBar
             videoLayout.addView(videoSurfaceView)
             videoSurfaceView?.requestFocus()
 
@@ -206,7 +214,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
             val parent = videoView.parent as ViewGroup? ?: return
 
             val index = parent.indexOfChild(videoView)
-            Log.d(TAG, "removePreviousPlayView(): index = $index")
+            Log.d(TAG, "removePreviousPlayView(): index = $index, parent = $parent")
             if (index >= 0) {
                 parent.removeViewAt(index)
             }

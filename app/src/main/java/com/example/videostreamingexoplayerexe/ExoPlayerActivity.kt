@@ -6,6 +6,7 @@ import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.app.AppCompatDelegate
+import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -36,6 +37,7 @@ class ExoPlayerActivity : AppCompatActivity(), Player.EventListener {
 
         if (intent.hasExtra(KEY_VIDEO_URI)){
             videoUri = intent.getStringExtra(KEY_VIDEO_URI)
+            Log.d(TAG, "onCreate(): videoUri = $videoUri")
         }
 
         imageViewExit.setOnClickListener {
@@ -48,7 +50,8 @@ class ExoPlayerActivity : AppCompatActivity(), Player.EventListener {
     private fun setup() {
         initializePlayer()
         if (videoUri != null) {
-            player?.prepare(buildMediaSource(Uri.parse(DEFAULT_VIDEO_URL)))
+            player?.prepare(buildMediaSource(Uri.parse(videoUri)))
+            player?.playWhenReady = true
             player?.addListener(this)
         }
     }
