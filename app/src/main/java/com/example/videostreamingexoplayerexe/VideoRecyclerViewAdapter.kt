@@ -20,6 +20,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.PlayerView.SHOW_BUFFERING_ALWAYS
 import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -46,6 +47,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
         // 1. create SurfaceView
         videoSurfaceView = PlayerView(appContext)
         videoSurfaceView!!.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+        videoSurfaceView?.useController = false
 
         // 2. create SimpleExoPlayer
         val trackSelectionFactory = AdaptiveTrackSelection.Factory()
@@ -78,13 +80,12 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
                     Player.STATE_BUFFERING -> {
                         videoSurfaceView!!.alpha = 0.5f
                         Log.d(TAG, "onPlayerStateChanged(): Buffering")
-//                        mProgressBar?.visibility = View.VISIBLE
+//                        videoSurfaceView?.setShowBuffering(SHOW_BUFFERING_ALWAYS)
 
                     }
 
                     Player.STATE_READY -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ready")
-//                        mProgressBar?.visibility = View.GONE
                         lastPlayingCover?.visibility = View.GONE  // at this moment loastPlayingCover == cover
                         videoSurfaceView?.visibility = View.VISIBLE
                         videoSurfaceView?.alpha = 1.0f
