@@ -39,6 +39,8 @@ class RecyclerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        recyclerViewFeed.scrollToPosition(0)
         // this section code can be only here
         if (firstTime){
             Handler(Looper.getMainLooper()).postDelayed({
@@ -52,24 +54,6 @@ class RecyclerActivity : AppCompatActivity() {
             }, 2000)
             firstTime = false
         }
-    }
-
-    override fun onPostResume() {
-        super.onPostResume()
-        recyclerViewFeed.scrollToPosition(0)
-
-//        if (firstTime){
-//            Handler(Looper.getMainLooper()).postDelayed({
-//                val view = recyclerViewFeed.findViewHolderForAdapterPosition(1)?.itemView!!
-//                Log.d("firsttime", "view[postion 1] = $view")
-//                val location = IntArray(2)
-//                view.getLocationInWindow(location)
-//                Log.d("firsttime", "getLocationInWindow: location[0]=x=${location[0]}, location[1]=y=${location[1]}")
-//                // location is the left/top point, the center point is (location[0] + width/2, location[1]+ height/2),
-//                perFromTouch(view, location[0] + 124.0f, location[1] + 64.0f)
-//            }, 2000)
-//            firstTime = false
-//        }
     }
 
     private fun perFromTouch(view: View, x: Float, y: Float) {

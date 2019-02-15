@@ -35,9 +35,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
     private var player: SimpleExoPlayer? = null
     private var lastPlayingCover: ImageView? = null
     private val appContext: Context = context.applicationContext
-    private var addedVideo: Boolean = false
     private var mProgressBar: ProgressBar? = null
-    private var playingItemIndex: Int = -1
 
     init {
         initializePlayer()
@@ -159,7 +157,6 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
             Glide.with(itemView.context).load(videoInfo.mCoverUrl).apply(RequestOptions().optionalCenterCrop())
                 .into(cover)
 
-
             itemView.setOnTouchListener { view, event ->
                 Log.d(TAG, "event = $event")
                 if (event.action == ACTION_DOWN) {
@@ -183,7 +180,6 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
             lastPlayingCover = cover
             mProgressBar = progressBar
             videoLayout.addView(videoSurfaceView)
-            addedVideo = true
             videoSurfaceView?.requestFocus()
 
             // create MediaSource
@@ -204,19 +200,15 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
                 }
             }
-
-            playingItemIndex = position
         }
 
         private fun removePreviousPlayView(videoView: PlayerView) {
-
             val parent = videoView.parent as ViewGroup? ?: return
 
             val index = parent.indexOfChild(videoView)
-            Log.d(TAG, "index = $index, playingViewIndex = $playingItemIndex")
+            Log.d(TAG, "removePreviousPlayView(): index = $index")
             if (index >= 0) {
                 parent.removeViewAt(index)
-                addedVideo = false
             }
 
         }
