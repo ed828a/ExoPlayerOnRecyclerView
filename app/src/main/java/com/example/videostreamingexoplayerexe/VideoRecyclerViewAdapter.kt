@@ -106,7 +106,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
         when (viewType) {
             VIEW_TYPE_NORMAL -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
-                return ViewHolder(view)
+                return ItemViewHolder(view, videoSurfaceView!!, player!!, mInfoList)
             }
 
             VIEW_TYPE_EMPTY -> {
@@ -116,7 +116,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
             else -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
-                return ViewHolder(view)
+                return ItemViewHolder(view, videoSurfaceView!!, player!!, mInfoList)
             }
         }
     }
@@ -134,85 +134,6 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
     }
 
 
-    inner class ViewHolder(itemView: View) : BaseViewHolder(itemView) {
-
-        val textViewTitle = itemView.textViewTitle
-        val userHandle = itemView.userHandle
-        val videoLayout = itemView.videoLayout
-        val cover = itemView.cover
-        val progressBar = itemView.progressBar
-        val parent = itemView
-
-        override fun clear() {
-
-        }
-
-
-        override fun onBind(position: Int) {
-            super.onBind(position)
-            parent.tag = this@ViewHolder
-            val videoInfo = mInfoList[position]
-            textViewTitle.text = videoInfo.mTitle
-            userHandle.text = videoInfo.mUserHandle
-            Glide.with(itemView.context).load(videoInfo.mCoverUrl).apply(RequestOptions().optionalCenterCrop())
-                .into(cover)
-
-            itemView.setOnTouchListener { view, event ->
-                Log.d(TAG, "event = $event")
-                if (event.action == ACTION_DOWN) {
-                    removePreviousPlayView(videoSurfaceView!!)
-                    playOnView(position)
-                    return@setOnTouchListener true
-                }
-
-                false
-            }
-
-            itemView.setOnClickListener {
-                removePreviousPlayView(videoSurfaceView!!)  // preventing from leakage
-            }
-        }
-
-        internal fun playOnView(position: Int) {
-            // add SurfaceView
-            lastPlayingCover?.visibility = View.VISIBLE
-            cover.visibility = View.GONE
-            lastPlayingCover = cover
-            mProgressBar = progressBar
-            videoLayout.addView(videoSurfaceView)
-            videoSurfaceView?.requestFocus()
-
-            // create MediaSource
-            val bandwidthMeter = DefaultBandwidthMeter()
-            val dataSourceFactory = DefaultDataSourceFactory(
-                appContext,
-                com.google.android.exoplayer2.util.Util.getUserAgent(appContext, context.packageName),
-                bandwidthMeter
-            )
-            val uriString = mInfoList[position].mUrl
-            if (uriString.isNotEmpty()) {
-                val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
-                    .createMediaSource(Uri.parse(uriString))
-
-                player?.let {
-                    it.prepare(mediaSource)
-                    it.playWhenReady = true
-
-                }
-            }
-        }
-
-        private fun removePreviousPlayView(videoView: PlayerView) {
-            val parent = videoView.parent as ViewGroup? ?: return
-
-            val index = parent.indexOfChild(videoView)
-            Log.d(TAG, "removePreviousPlayView(): index = $index")
-            if (index >= 0) {
-                parent.removeViewAt(index)
-            }
-
-        }
-    }
 
     inner class EmptyViewHolder(itemView: View) : BaseViewHolder(itemView) {
         val retryButton = itemView.btn_retry
