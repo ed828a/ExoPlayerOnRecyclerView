@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -27,7 +28,7 @@ class RecyclerActivity : AppCompatActivity() {
         val dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider_drawable)!!
         with(recyclerViewFeed){
 
-            layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false)
+            layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false) as RecyclerView.LayoutManager?
             addItemDecoration(DividerItemDecoration(dividerDrawable))
             itemAnimator = DefaultItemAnimator()
             mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
@@ -38,6 +39,7 @@ class RecyclerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // this section code can be only here
         if (firstTime){
             Handler(Looper.getMainLooper()).postDelayed({
                 val view = recyclerViewFeed.findViewHolderForAdapterPosition(1)?.itemView!!
@@ -56,18 +58,18 @@ class RecyclerActivity : AppCompatActivity() {
         super.onPostResume()
         recyclerViewFeed.scrollToPosition(0)
 
-        if (firstTime){
-            Handler(Looper.getMainLooper()).postDelayed({
-                val view = recyclerViewFeed.findViewHolderForAdapterPosition(1)?.itemView!!
-                Log.d("firsttime", "view[postion 1] = $view")
-                val location = IntArray(2)
-                view.getLocationInWindow(location)
-                Log.d("firsttime", "getLocationInWindow: location[0]=x=${location[0]}, location[1]=y=${location[1]}")
-                // location is the left/top point, the center point is (location[0] + width/2, location[1]+ height/2),
-                perFromTouch(view, location[0] + 124.0f, location[1] + 64.0f)
-            }, 2000)
-            firstTime = false
-        }
+//        if (firstTime){
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                val view = recyclerViewFeed.findViewHolderForAdapterPosition(1)?.itemView!!
+//                Log.d("firsttime", "view[postion 1] = $view")
+//                val location = IntArray(2)
+//                view.getLocationInWindow(location)
+//                Log.d("firsttime", "getLocationInWindow: location[0]=x=${location[0]}, location[1]=y=${location[1]}")
+//                // location is the left/top point, the center point is (location[0] + width/2, location[1]+ height/2),
+//                perFromTouch(view, location[0] + 124.0f, location[1] + 64.0f)
+//            }, 2000)
+//            firstTime = false
+//        }
     }
 
     private fun perFromTouch(view: View, x: Float, y: Float) {

@@ -27,7 +27,7 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Log
 import com.google.android.exoplayer2.util.Util
-
+// not useful for Video on RecyclerView
 class ExoPlayerRecyclerView : RecyclerView {
 
     private var videoInfoList: List<VideoInfo> = arrayListOf()

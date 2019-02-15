@@ -11,6 +11,7 @@ import com.example.videostreamingexoplayerexe.ExoPlayerActivity.Companion.DEFAUL
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.dialog_prompts.view.*
 
+// not useful for Video on RecyclerView
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
