@@ -26,16 +26,29 @@ class RecyclerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recycler)
 
 
+//        val dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider_drawable)!!
+//        with(recyclerViewFeed){
+//            layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false) as RecyclerView.LayoutManager?
+//            addItemDecoration(DividerItemDecoration(dividerDrawable))
+//            itemAnimator = DefaultItemAnimator() as RecyclerView.ItemAnimator?
+//            mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
+//            adapter = mAdapter
+//        }
+
+    }
+
+    override fun onStart() {
+        Log.d(TAG, "onStart() called")
+        super.onStart()
+
         val dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider_drawable)!!
         with(recyclerViewFeed){
-
             layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false) as RecyclerView.LayoutManager?
             addItemDecoration(DividerItemDecoration(dividerDrawable))
             itemAnimator = DefaultItemAnimator() as RecyclerView.ItemAnimator?
             mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
             adapter = mAdapter
         }
-
     }
 
     override fun onResume() {
@@ -88,14 +101,14 @@ class RecyclerActivity : AppCompatActivity() {
     override fun onStop() {
         Log.d(TAG, "onStop() called")
         super.onStop()
-//        mAdapter?.onRelease()
+        mAdapter?.onRelease()
     }
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy() called")
         super.onDestroy()
 
-        mAdapter?.onRelease()
+//        mAdapter?.onRelease()
     }
 
     private fun prepareVideoList(): List<VideoInfo> {

@@ -69,7 +69,7 @@ class ItemViewHolder (itemView: View,
         }
     }
 
-    internal fun playOnView(position: Int) {
+    private fun playOnView(position: Int) {
         // add SurfaceView
         val lastPlayingCover = MyCache.transport.lastPlayingCover
         lastPlayingCover?.visibility = View.VISIBLE
