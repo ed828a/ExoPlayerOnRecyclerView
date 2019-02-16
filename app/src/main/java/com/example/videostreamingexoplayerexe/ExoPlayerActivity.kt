@@ -48,7 +48,8 @@ class ExoPlayerActivity : AppCompatActivity(), Player.EventListener {
     private fun setup() {
         initializePlayer()
         if (videoUri != null) {
-            player?.prepare(buildMediaSource(Uri.parse(DEFAULT_VIDEO_URL)))
+            player?.prepare(buildMediaSource(Uri.parse(videoUri)))
+            player?.playWhenReady = true
             player?.addListener(this)
         }
     }

@@ -51,7 +51,7 @@ class RecyclerActivity : AppCompatActivity() {
                 Log.d("firsttime", "getLocationInWindow: location[0]=x=${location[0]}, location[1]=y=${location[1]}")
                 // location is the left/top point, the center point is (location[0] + width/2, location[1]+ height/2),
                 perFromTouch(view, location[0] + 124.0f, location[1] + 64.0f)
-            }, 2000)
+            }, 1000)
             firstTime = false
         }
     }
@@ -71,7 +71,7 @@ class RecyclerActivity : AppCompatActivity() {
             MotionEvent.ACTION_DOWN,
             x,
             y,
-            0
+            metaState
         )
 //        motionEvent.source = inputSource
         view.dispatchTouchEvent(motionEvent)

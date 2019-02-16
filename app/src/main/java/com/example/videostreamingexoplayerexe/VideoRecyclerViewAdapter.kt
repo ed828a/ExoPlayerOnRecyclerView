@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.ui.PlayerView.SHOW_BUFFERING_ALWAYS
 import com.google.android.exoplayer2.upstream.DefaultAllocator
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
@@ -31,11 +32,11 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
     // surface view for playing video
     private var videoSurfaceView: PlayerView? = null
-
     private var player: SimpleExoPlayer? = null
     private var lastPlayingCover: ImageView? = null
+//    private var mProgressBar: ProgressBar? = null
     private val appContext: Context = context.applicationContext
-    private var mProgressBar: ProgressBar? = null
+
 
     init {
         initializePlayer()
@@ -45,6 +46,8 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
         // 1. create SurfaceView
         videoSurfaceView = PlayerView(appContext)
         videoSurfaceView!!.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+        videoSurfaceView!!.useController = false
+        videoSurfaceView!!.setShowBuffering(SHOW_BUFFERING_ALWAYS)
 
         // 2. create SimpleExoPlayer
         val trackSelectionFactory = AdaptiveTrackSelection.Factory()
@@ -75,38 +78,49 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
                 super.onPlayerStateChanged(playWhenReady, playbackState)
                 when (playbackState) {
                     Player.STATE_BUFFERING -> {
+                        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
                         videoSurfaceView!!.alpha = 0.5f
                         Log.d(TAG, "onPlayerStateChanged(): Buffering")
-                        mProgressBar?.visibility = View.VISIBLE
 
                     }
 
                     Player.STATE_READY -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ready")
-                        mProgressBar?.visibility = View.GONE
+//                        mProgressBar?.visibility = View.GONE
+                        MyCache.transport.lastPlayingCover?.visibility = View.GONE
                         videoSurfaceView?.visibility = View.VISIBLE
                         videoSurfaceView?.alpha = 1.0f
-                        lastPlayingCover?.visibility = View.GONE
+
                     }
 
                     Player.STATE_ENDED -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ended")
+//                        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
 //                        player?.seekTo(0)
                     }
                 }
             }
         })
+
+        MyCache.transport.player = player
+        MyCache.transport.videoSurfaceView = videoSurfaceView
     }
 
     fun onRelease() {
         player?.release()
+
+        with(MyCache.transport){
+            player = null
+            videoSurfaceView = null
+            lastPlayingCover = null
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         when (viewType) {
             VIEW_TYPE_NORMAL -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
-                return ItemViewHolder(view, videoSurfaceView!!, player!!, mInfoList)
+                return ItemViewHolder(view,  mInfoList)
             }
 
             VIEW_TYPE_EMPTY -> {
@@ -116,7 +130,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
             else -> {
                 val view = LayoutInflater.from(parent.context).inflate(R.layout.item_layout, parent, false)
-                return ItemViewHolder(view, videoSurfaceView!!, player!!, mInfoList)
+                return ItemViewHolder(view,  mInfoList)
             }
         }
     }

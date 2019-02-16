@@ -1,6 +1,8 @@
 package com.example.videostreamingexoplayerexe
 
+import android.content.Intent
 import android.net.Uri
+import android.support.v4.content.ContextCompat.startActivity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -18,8 +20,6 @@ import com.google.android.exoplayer2.util.Util
 import kotlinx.android.synthetic.main.item_layout.view.*
 
 class ItemViewHolder (itemView: View,
-                      private val videoSurfaceView: PlayerView,
-                      private val player: SimpleExoPlayer,
                       private val InfoList: List<VideoInfo>) : BaseViewHolder(itemView) {
 
     val textViewTitle = itemView.textViewTitle
@@ -33,7 +33,6 @@ class ItemViewHolder (itemView: View,
     // video player
     val appContext = itemView.context.applicationContext
     var mProgressBar: ProgressBar? = null
-    var lastPlayingCover = itemView.rootView.tag as ImageView?
 
     override fun clear() {
 
@@ -51,28 +50,35 @@ class ItemViewHolder (itemView: View,
         itemView.setOnTouchListener { view, event ->
             Log.d(TAG, "event = $event")
             if (event.action == MotionEvent.ACTION_DOWN) {
+                val videoSurfaceView = MyCache.transport.videoSurfaceView!!
                 removePreviousPlayView(videoSurfaceView)
                 playOnView(position)
-                return@setOnTouchListener true
+                return@setOnTouchListener false
             }
 
             false
         }
 
         itemView.setOnClickListener {
+            val videoSurfaceView = MyCache.transport.videoSurfaceView!!
             removePreviousPlayView(videoSurfaceView)  // preventing from leakage
+            val intent = Intent(this.appContext, ExoPlayerActivity::class.java)
+            intent.putExtra(ExoPlayerActivity.KEY_VIDEO_URI, InfoList[position].mUrl)
+            it.context.startActivity(intent)
         }
     }
 
     internal fun playOnView(position: Int) {
         // add SurfaceView
+        val lastPlayingCover = MyCache.transport.lastPlayingCover
         lastPlayingCover?.visibility = View.VISIBLE
         cover.visibility = View.GONE
-        lastPlayingCover = cover
+        MyCache.transport.lastPlayingCover = cover
         itemView.rootView.tag = lastPlayingCover
         mProgressBar = progressBar
+        val videoSurfaceView = MyCache.transport.videoSurfaceView
         videoLayout.addView(videoSurfaceView)
-        videoSurfaceView.requestFocus()
+        videoSurfaceView?.requestFocus()
 
         // create MediaSource
         val bandwidthMeter = DefaultBandwidthMeter()
@@ -85,7 +91,7 @@ class ItemViewHolder (itemView: View,
         if (uriString.isNotEmpty()) {
             val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(Uri.parse(uriString))
-
+            val player = MyCache.transport.player!!
             with(player) {
                 prepare(mediaSource)
                 playWhenReady = true
@@ -95,15 +101,13 @@ class ItemViewHolder (itemView: View,
 
     private fun removePreviousPlayView(videoView: PlayerView) {
         val parent = videoView.parent as ViewGroup? ?: return
-        val rootView = videoView.rootView as ViewGroup
 
         val index = parent.indexOfChild(videoView)
-        val index2 = rootView.indexOfChild(videoView)
-        Log.d(TAG, "removePreviousPlayView(): index = $index, parent = $parent, rootView = $rootView, index2 = $index2")
+        Log.d(TAG, "removePreviousPlayView(): index = $index, parent = $parent")
         if (index >= 0) {
-//            parent.removeViewAt(index)
-            rootView.removeViewAt(index2)
+            parent.removeViewAt(index)
         }
+//        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
     }
 
     companion object {
