@@ -98,6 +98,10 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 //                        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
 //                        player?.seekTo(0)
                     }
+
+//                    Player.STATE_IDLE -> {
+//                        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
+//                    }
                 }
             }
         })
@@ -107,13 +111,7 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
     }
 
     fun onRelease() {
-        player?.release()
-
-        with(MyCache.transport){
-            player = null
-            videoSurfaceView = null
-            lastPlayingCover = null
-        }
+       MyCache.reset()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {

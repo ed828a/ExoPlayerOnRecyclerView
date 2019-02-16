@@ -21,6 +21,7 @@ class RecyclerActivity : AppCompatActivity() {
     private var mAdapter: VideoRecyclerViewAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d(TAG, "onCreate() called")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recycler)
 
@@ -30,7 +31,7 @@ class RecyclerActivity : AppCompatActivity() {
 
             layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false) as RecyclerView.LayoutManager?
             addItemDecoration(DividerItemDecoration(dividerDrawable))
-            itemAnimator = DefaultItemAnimator()
+            itemAnimator = DefaultItemAnimator() as RecyclerView.ItemAnimator?
             mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
             adapter = mAdapter
         }
@@ -38,6 +39,7 @@ class RecyclerActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        Log.d(TAG, "onResume() called")
         super.onResume()
 
         recyclerViewFeed.scrollToPosition(0)
@@ -77,8 +79,20 @@ class RecyclerActivity : AppCompatActivity() {
         view.dispatchTouchEvent(motionEvent)
     }
 
+    override fun onPause() {
+        Log.d(TAG, "onPause() called")
+        if (!firstTime) firstTime = true
+        super.onPause()
+    }
+
+    override fun onStop() {
+        Log.d(TAG, "onStop() called")
+        super.onStop()
+//        mAdapter?.onRelease()
+    }
 
     override fun onDestroy() {
+        Log.d(TAG, "onDestroy() called")
         super.onDestroy()
 
         mAdapter?.onRelease()
@@ -134,4 +148,7 @@ class RecyclerActivity : AppCompatActivity() {
         return result
     }
 
+    companion object {
+        const val TAG = "RecyclerActivity"
+    }
 }

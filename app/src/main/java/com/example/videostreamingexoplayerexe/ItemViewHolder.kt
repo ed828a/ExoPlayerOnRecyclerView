@@ -32,12 +32,10 @@ class ItemViewHolder (itemView: View,
 
     // video player
     val appContext = itemView.context.applicationContext
-    var mProgressBar: ProgressBar? = null
 
     override fun clear() {
 
     }
-
 
     override fun onBind(position: Int) {
         super.onBind(position)
@@ -62,6 +60,9 @@ class ItemViewHolder (itemView: View,
         itemView.setOnClickListener {
             val videoSurfaceView = MyCache.transport.videoSurfaceView!!
             removePreviousPlayView(videoSurfaceView)  // preventing from leakage
+
+            MyCache.transport.player?.stop()  // because we are leaving this activity, keep player running doesn't make sense
+            // clean transporter
             val intent = Intent(this.appContext, ExoPlayerActivity::class.java)
             intent.putExtra(ExoPlayerActivity.KEY_VIDEO_URI, InfoList[position].mUrl)
             it.context.startActivity(intent)
@@ -74,8 +75,6 @@ class ItemViewHolder (itemView: View,
         lastPlayingCover?.visibility = View.VISIBLE
         cover.visibility = View.GONE
         MyCache.transport.lastPlayingCover = cover
-        itemView.rootView.tag = lastPlayingCover
-        mProgressBar = progressBar
         val videoSurfaceView = MyCache.transport.videoSurfaceView
         videoLayout.addView(videoSurfaceView)
         videoSurfaceView?.requestFocus()
