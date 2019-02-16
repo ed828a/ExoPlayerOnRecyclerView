@@ -26,21 +26,6 @@ class RecyclerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_recycler)
 
 
-//        val dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider_drawable)!!
-//        with(recyclerViewFeed){
-//            layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false) as RecyclerView.LayoutManager?
-//            addItemDecoration(DividerItemDecoration(dividerDrawable))
-//            itemAnimator = DefaultItemAnimator() as RecyclerView.ItemAnimator?
-//            mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
-//            adapter = mAdapter
-//        }
-
-    }
-
-    override fun onStart() {
-        Log.d(TAG, "onStart() called")
-        super.onStart()
-
         val dividerDrawable = ContextCompat.getDrawable(this, R.drawable.divider_drawable)!!
         with(recyclerViewFeed){
             layoutManager = LinearLayoutManager(this@RecyclerActivity, VERTICAL, false) as RecyclerView.LayoutManager?
@@ -49,6 +34,14 @@ class RecyclerActivity : AppCompatActivity() {
             mAdapter = VideoRecyclerViewAdapter(this@RecyclerActivity, videoList)
             adapter = mAdapter
         }
+
+    }
+
+    override fun onStart() {
+        Log.d(TAG, "onStart() called")
+        super.onStart()
+
+        mAdapter?.initializePlayer()
     }
 
     override fun onResume() {

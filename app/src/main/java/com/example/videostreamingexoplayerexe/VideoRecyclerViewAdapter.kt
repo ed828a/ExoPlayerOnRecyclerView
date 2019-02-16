@@ -33,16 +33,11 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
     // surface view for playing video
     private var videoSurfaceView: PlayerView? = null
     private var player: SimpleExoPlayer? = null
-    private var lastPlayingCover: ImageView? = null
-//    private var mProgressBar: ProgressBar? = null
     private val appContext: Context = context.applicationContext
 
 
-    init {
-        initializePlayer()
-    }
-
-    private fun initializePlayer() {
+    // make sure this one is called in onStart() to prevent the leakage.
+    internal fun initializePlayer() {
         // 1. create SurfaceView
         videoSurfaceView = PlayerView(appContext)
         videoSurfaceView!!.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
@@ -86,7 +81,6 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
                     Player.STATE_READY -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ready")
-//                        mProgressBar?.visibility = View.GONE
                         MyCache.transport.lastPlayingCover?.visibility = View.GONE
                         videoSurfaceView?.visibility = View.VISIBLE
                         videoSurfaceView?.alpha = 1.0f
@@ -95,13 +89,9 @@ class VideoRecyclerViewAdapter(val context: Context, val mInfoList: List<VideoIn
 
                     Player.STATE_ENDED -> {
                         Log.d(TAG, "onPlayerStateChanged(): Ended")
-//                        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
+                        // make circularly playing
 //                        player?.seekTo(0)
                     }
-
-//                    Player.STATE_IDLE -> {
-//                        MyCache.transport.lastPlayingCover?.visibility = View.VISIBLE
-//                    }
                 }
             }
         })
